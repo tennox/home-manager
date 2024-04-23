@@ -8,7 +8,8 @@ let
   yamlFormat = pkgs.formats.yaml { };
   zellijCmd = getExe cfg.package;
 
-in {
+in
+{
   meta.maintainers = [ hm.maintainers.mainrs ];
 
   options.programs.zellij = {
@@ -49,7 +50,13 @@ in {
       default = false;
     };
 
-    enableFishIntegration = mkEnableOption "Fish integration" // {
+    enableFishIntegration = mkEnableOption "Fish integration (enables both enableFishAutostart and enableFishCompletions)" // {
+      default = false;
+    };
+    enableFishAutostart = mkEnableOption "autostart zellij in interactive sessions" // {
+      default = false;
+    };
+    enableFishCompletions = mkEnableOption "load zellij completions" // {
       default = false;
     };
   };
@@ -60,12 +67,14 @@ in {
     # Zellij switched from yaml to KDL in version 0.32.0:
     # https://github.com/zellij-org/zellij/releases/tag/v0.32.0
     xdg.configFile."zellij/config.yaml" = mkIf
-      (cfg.settings != { } && (versionOlder cfg.package.version "0.32.0")) {
+      (cfg.settings != { } && (versionOlder cfg.package.version "0.32.0"))
+      {
         source = yamlFormat.generate "zellij.yaml" cfg.settings;
       };
 
     xdg.configFile."zellij/config.kdl" = mkIf
-      (cfg.settings != { } && (versionAtLeast cfg.package.version "0.32.0")) {
+      (cfg.settings != { } && (versionAtLeast cfg.package.version "0.32.0"))
+      {
         text = lib.hm.generators.toKDL { } cfg.settings;
       };
 
@@ -77,10 +86,15 @@ in {
       eval "$(${zellijCmd} setup --generate-auto-start zsh)"
     '');
 
-    programs.fish.interactiveShellInit = mkIf cfg.enableFishIntegration
-      (mkOrder 200 ''
-        eval (${zellijCmd} setup --generate-auto-start fish | string collect)
-        eval (${zellijCmd} setup --generate-completion fish | string collect)
-      '');
+    programs.fish.interactiveShellInit = mkIf (cfg.enableFishIntegration || cfg.enableFishAutostart || cfg.enableFishCompletions)
+      (mkOrder 200 (
+        (if cfg.enableFishIntegration || cfg.enableFishCompletions then ''
+          eval (${zellijCmd} setup --generate-completion fish | string collect)
+        '' else "") +
+        (if cfg.enableFishIntegration || cfg.enableFishAutostart then ''
+          eval (${zellijCmd} setup --generate-auto-start fish | string collect)
+        '' else "")
+      ));
+
   };
 }

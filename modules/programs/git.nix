@@ -12,7 +12,8 @@ let
       multipleType = either primitiveType (listOf primitiveType);
       sectionType = attrsOf multipleType;
       supersectionType = attrsOf (either multipleType sectionType);
-    in attrsOf supersectionType;
+    in
+    attrsOf supersectionType;
 
   signModule = types.submodule {
     options = {
@@ -96,7 +97,8 @@ let
         (generators.toGitINI config.contents)));
   });
 
-in {
+in
+{
   meta.maintainers = [ maintainers.rycee ];
 
   options = {
@@ -275,7 +277,15 @@ in {
           '';
         };
 
+
         package = mkPackageOption pkgs "difftastic" { };
+
+        enableAsDifftool = mkEnableOption "" // {
+          description = ''
+            Enable the {command}`difftastic` syntax highlighter as a git difftool.
+            See <https://github.com/Wilfred/difftastic>.
+          '';
+        };
 
         background = mkOption {
           type = types.enum [ "light" "dark" ];
@@ -322,7 +332,8 @@ in {
             let
               primitiveType = either str (either bool int);
               sectionType = attrsOf primitiveType;
-            in attrsOf (either primitiveType sectionType);
+            in
+            attrsOf (either primitiveType sectionType);
           default = { };
           example = {
             features = "decorations";
@@ -412,14 +423,16 @@ in {
     {
       home.packages = [ cfg.package ];
       assertions = [{
-        assertion = let
-          enabled = [
-            cfg.delta.enable
-            cfg.diff-so-fancy.enable
-            cfg.difftastic.enable
-            cfg.diff-highlight.enable
-          ];
-        in count id enabled <= 1;
+        assertion =
+          let
+            enabled = [
+              cfg.delta.enable
+              cfg.diff-so-fancy.enable
+              cfg.difftastic.enable
+              cfg.diff-highlight.enable
+            ];
+          in
+          count id enabled <= 1;
         message =
           "Only one of 'programs.git.delta.enable' or 'programs.git.difftastic.enable' or 'programs.git.diff-so-fancy.enable' or 'programs.git.diff-highlight' can be set to true at the same time.";
       }];
@@ -443,35 +456,38 @@ in {
     }
 
     {
-      programs.git.iniContent = let
-        hasSmtp = name: account: account.smtp != null;
+      programs.git.iniContent =
+        let
+          hasSmtp = name: account: account.smtp != null;
 
-        genIdentity = name: account:
-          with account;
-          nameValuePair "sendemail.${name}" (if account.msmtp.enable then {
-            smtpServer = "${pkgs.msmtp}/bin/msmtp";
-            envelopeSender = "auto";
-            from = "${realName} <${address}>";
-          } else
-            {
-              smtpEncryption = if smtp.tls.enable then
-                (if smtp.tls.useStartTls
-                || versionOlder config.home.stateVersion "20.09" then
-                  "tls"
-                else
-                  "ssl")
-              else
-                "";
-              smtpSslCertPath =
-                mkIf smtp.tls.enable (toString smtp.tls.certificatesFile);
-              smtpServer = smtp.host;
-              smtpUser = userName;
+          genIdentity = name: account:
+            with account;
+            nameValuePair "sendemail.${name}" (if account.msmtp.enable then {
+              smtpServer = "${pkgs.msmtp}/bin/msmtp";
+              envelopeSender = "auto";
               from = "${realName} <${address}>";
-            } // optionalAttrs (smtp.port != null) {
-              smtpServerPort = smtp.port;
-            });
-      in mapAttrs' genIdentity
-      (filterAttrs hasSmtp config.accounts.email.accounts);
+            } else
+              {
+                smtpEncryption =
+                  if smtp.tls.enable then
+                    (if smtp.tls.useStartTls
+                    || versionOlder config.home.stateVersion "20.09" then
+                      "tls"
+                    else
+                      "ssl")
+                  else
+                    "";
+                smtpSslCertPath =
+                  mkIf smtp.tls.enable (toString smtp.tls.certificatesFile);
+                smtpServer = smtp.host;
+                smtpUser = userName;
+                from = "${realName} <${address}>";
+              } // optionalAttrs (smtp.port != null) {
+                smtpServerPort = smtp.port;
+              });
+        in
+        mapAttrs' genIdentity
+          (filterAttrs hasSmtp config.accounts.email.accounts);
     }
 
     (mkIf (cfg.signing != null) {
@@ -485,10 +501,12 @@ in {
 
     (mkIf (cfg.hooks != { }) {
       programs.git.iniContent = {
-        core.hooksPath = let
-          entries =
-            mapAttrsToList (name: path: { inherit name path; }) cfg.hooks;
-        in toString (pkgs.linkFarm "git-hooks" entries);
+        core.hooksPath =
+          let
+            entries =
+              mapAttrsToList (name: path: { inherit name path; }) cfg.hooks;
+          in
+          toString (pkgs.linkFarm "git-hooks" entries);
       };
     })
 
@@ -499,26 +517,30 @@ in {
     })
 
     (mkIf (lib.isString cfg.extraConfig) {
-      warnings = [''
-        Using programs.git.extraConfig as a string option is
-        deprecated and will be removed in the future. Please
-        change to using it as an attribute set instead.
-      ''];
+      warnings = [
+        ''
+          Using programs.git.extraConfig as a string option is
+          deprecated and will be removed in the future. Please
+          change to using it as an attribute set instead.
+        ''
+      ];
 
       xdg.configFile."git/config".text = cfg.extraConfig;
     })
 
     (mkIf (cfg.includes != [ ]) {
-      xdg.configFile."git/config".text = let
-        include = i:
-          with i;
-          if condition != null then {
-            includeIf.${condition}.path = "${path}";
-          } else {
-            include.path = "${path}";
-          };
-      in mkAfter (concatStringsSep "\n"
-        (map generators.toGitINI (map include cfg.includes)));
+      xdg.configFile."git/config".text =
+        let
+          include = i:
+            with i;
+            if condition != null then {
+              includeIf.${condition}.path = "${path}";
+            } else {
+              include.path = "${path}";
+            };
+        in
+        mkAfter (concatStringsSep "\n"
+          (map generators.toGitINI (map include cfg.includes)));
     })
 
     (mkIf cfg.lfs.enable {
@@ -547,10 +569,11 @@ in {
 
         Service = {
           Type = "oneshot";
-          ExecStart = let exe = lib.getExe cfg.package;
-          in ''
-            "${exe}" for-each-repo --keep-going --config=maintenance.repo maintenance run --schedule=%i
-          '';
+          ExecStart =
+            let exe = lib.getExe cfg.package;
+            in ''
+              "${exe}" for-each-repo --keep-going --config=maintenance.repo maintenance run --schedule=%i
+            '';
           LockPersonality = "yes";
           MemoryDenyWriteExecute = "yes";
           NoNewPrivileges = "yes";
@@ -563,58 +586,76 @@ in {
         };
       };
 
-      systemd.user.timers = let
-        toSystemdTimer = name: time:
-          lib.attrsets.nameValuePair "git-maintenance@${name}" {
-            Unit.Description = "Optimize Git repositories data";
+      systemd.user.timers =
+        let
+          toSystemdTimer = name: time:
+            lib.attrsets.nameValuePair "git-maintenance@${name}" {
+              Unit.Description = "Optimize Git repositories data";
 
-            Timer = {
-              OnCalendar = time;
-              Persistent = true;
+              Timer = {
+                OnCalendar = time;
+                Persistent = true;
+              };
+
+              Install.WantedBy = [ "timers.target" ];
             };
-
-            Install.WantedBy = [ "timers.target" ];
-          };
-      in lib.attrsets.mapAttrs' toSystemdTimer cfg.maintenance.timers;
+        in
+        lib.attrsets.mapAttrs' toSystemdTimer cfg.maintenance.timers;
     })
 
     (mkIf cfg.diff-highlight.enable {
-      programs.git.iniContent = let
-        dhCommand =
-          "${cfg.package}/share/git/contrib/diff-highlight/diff-highlight";
-      in {
-        core.pager = "${dhCommand} | ${getExe pkgs.less} ${
+      programs.git.iniContent =
+        let
+          dhCommand =
+            "${cfg.package}/share/git/contrib/diff-highlight/diff-highlight";
+        in
+        {
+          core.pager = "${dhCommand} | ${getExe pkgs.less} ${
             escapeShellArgs cfg.diff-highlight.pagerOpts
           }";
-        interactive.diffFilter = dhCommand;
-      };
+          interactive.diffFilter = dhCommand;
+        };
     })
 
-    (mkIf cfg.difftastic.enable {
-      home.packages = [ cfg.difftastic.package ];
-
-      programs.git.iniContent = let
+    (
+      let
         difftCommand = concatStringsSep " " [
           "${getExe cfg.difftastic.package}"
           "--color ${cfg.difftastic.color}"
           "--background ${cfg.difftastic.background}"
           "--display ${cfg.difftastic.display}"
         ];
-      in { diff.external = difftCommand; };
-    })
+      in
+      (lib.mkMerge [
+        (mkIf cfg.difftastic.enable {
+          home.packages = [ cfg.difftastic.package ];
+          programs.git.iniContent = { diff.external = difftCommand; };
+        })
+        (mkIf cfg.difftastic.enableAsDifftool {
+          home.packages = [ cfg.difftastic.package ];
+          programs.git.iniContent = {
+            diff = { tool = lib.mkDefault "difftastic"; };
+            difftool = { difftastic = { cmd = "${difftCommand} $LOCAL $REMOTE"; }; };
+          };
+        })
+      ])
+    )
 
-    (let
-      deltaPackage = cfg.delta.package;
-      deltaCommand = "${deltaPackage}/bin/delta";
-    in mkIf cfg.delta.enable {
-      home.packages = [ deltaPackage ];
+    (
+      let
+        deltaPackage = cfg.delta.package;
+        deltaCommand = "${deltaPackage}/bin/delta";
+      in
+      mkIf cfg.delta.enable {
+        home.packages = [ deltaPackage ];
 
-      programs.git.iniContent = {
-        core.pager = deltaCommand;
-        interactive.diffFilter = "${deltaCommand} --color-only";
-        delta = cfg.delta.options;
-      };
-    })
+        programs.git.iniContent = {
+          core.pager = deltaCommand;
+          interactive.diffFilter = "${deltaCommand} --color-only";
+          delta = cfg.delta.options;
+        };
+      }
+    )
 
     (mkIf cfg.diff-so-fancy.enable {
       home.packages = [ pkgs.diff-so-fancy ];

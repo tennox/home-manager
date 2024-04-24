@@ -49,15 +49,27 @@ in {
       default = false;
     };
 
-    enableFishIntegration = mkEnableOption "Fish integration (enables both enableFishAutostart and enableFishCompletions)" // {
-      default = false;
-    };
-    enableFishAutostart = mkEnableOption "autostart zellij in interactive sessions" // {
-      default = false;
-    };
+    enableFishIntegration = mkEnableOption
+      "Fish integration (enables both enableFishAutoStart and enableFishCompletions)"
+      // {
+        default = false;
+      };
     enableFishCompletions = mkEnableOption "load zellij completions" // {
       default = false;
     };
+    enableFishAutoStart =
+      mkEnableOption "autostart zellij in interactive sessions" // {
+        default = false;
+      };
+    autoStartAttachIfSessionExists = mkEnableOption
+      "If the zellij session already exists, attach to the default session. (not starting as a new session)"
+      // {
+        default = false;
+      };
+    autoStartExitShellOnZellijExit =
+      mkEnableOption "When zellij exits, exit the shell as well." // {
+        default = false;
+      };
   };
 
   config = mkIf cfg.enable {
@@ -83,15 +95,20 @@ in {
       eval "$(${zellijCmd} setup --generate-auto-start zsh)"
     '');
 
-    programs.fish.interactiveShellInit = mkIf (cfg.enableFishIntegration || cfg.enableFishAutostart || cfg.enableFishCompletions)
-      (mkOrder 200 (
-        (if cfg.enableFishIntegration || cfg.enableFishCompletions then ''
+    home.sessionVariables = {
+      ZELLIJ_AUTO_ATTACH = cfg.autoStartAttachIfSessionExists;
+      ZELLIJ_AUTO_EXIT = cfg.autoStartExitShellOnZellijExit;
+    };
+
+    programs.fish.interactiveShellInit = mkIf (cfg.enableFishIntegration
+      || cfg.enableFishAutoStart || cfg.enableFishCompletions) (mkOrder 200
+        ((if cfg.enableFishIntegration || cfg.enableFishCompletions then ''
           eval (${zellijCmd} setup --generate-completion fish | string collect)
-        '' else "") +
-        (if cfg.enableFishIntegration || cfg.enableFishAutostart then ''
-          eval (${zellijCmd} setup --generate-auto-start fish | string collect)
-        '' else "")
-      ));
+        '' else
+          "") + (if cfg.enableFishIntegration || cfg.enableFishAutoStart then ''
+            eval (${zellijCmd} setup --generate-auto-start fish | string collect)
+          '' else
+            "")));
 
   };
 }

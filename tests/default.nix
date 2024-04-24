@@ -88,6 +88,7 @@ in import nmtSrc {
     ./modules/programs/i3status
     ./modules/programs/irssi
     ./modules/programs/jujutsu
+    ./modules/programs/joplin-desktop
     ./modules/programs/k9s
     ./modules/programs/kakoune
     ./modules/programs/khal
@@ -121,11 +122,13 @@ in import nmtSrc {
     ./modules/programs/pet
     ./modules/programs/pistol
     ./modules/programs/pls
+    ./modules/programs/poetry
     ./modules/programs/powerline-go
     ./modules/programs/pubs
     ./modules/programs/pyenv
     ./modules/programs/qcal
     ./modules/programs/qutebrowser
+    ./modules/programs/ranger
     ./modules/programs/readline
     ./modules/programs/rio
     ./modules/programs/ripgrep
@@ -134,9 +137,11 @@ in import nmtSrc {
     ./modules/programs/sapling
     ./modules/programs/sbt
     ./modules/programs/scmpuff
+    ./modules/programs/senpai
     ./modules/programs/sftpman
     ./modules/programs/sioyek
     ./modules/programs/sm64ex
+    ./modules/programs/spotify-player
     ./modules/programs/ssh
     ./modules/programs/starship
     ./modules/programs/taskwarrior
@@ -153,12 +158,14 @@ in import nmtSrc {
     ./modules/programs/wezterm
     ./modules/programs/yazi
     ./modules/programs/zellij
+    ./modules/programs/zk
     ./modules/programs/zplug
     ./modules/programs/zsh
     ./modules/services/syncthing/common
     ./modules/xresources
   ] ++ lib.optionals isDarwin [
     ./modules/launchd
+    ./modules/services/espanso-darwin
     ./modules/services/git-sync-darwin
     ./modules/services/imapnotify-darwin
     ./modules/services/nix-gc-darwin
@@ -202,12 +209,14 @@ in import nmtSrc {
     ./modules/programs/swayr
     ./modules/programs/terminator
     ./modules/programs/thunderbird
+    ./modules/programs/tofi
     ./modules/programs/waybar
     ./modules/programs/wlogout
     ./modules/programs/wofi
     ./modules/programs/wpaperd
     ./modules/programs/xmobar
     ./modules/programs/yt-dlp
+    ./modules/services/activitywatch
     ./modules/services/avizo
     ./modules/services/barrier
     ./modules/services/borgmatic
@@ -247,6 +256,7 @@ in import nmtSrc {
     ./modules/services/polybar
     ./modules/services/recoll
     ./modules/services/redshift-gammastep
+    ./modules/services/remmina
     ./modules/services/screen-locker
     ./modules/services/signaturepdf
     ./modules/services/swayidle
@@ -260,6 +270,7 @@ in import nmtSrc {
     ./modules/services/window-managers/herbstluftwm
     ./modules/services/window-managers/hyprland
     ./modules/services/window-managers/i3
+    ./modules/services/window-managers/river
     ./modules/services/window-managers/spectrwm
     ./modules/services/window-managers/sway
     ./modules/services/wlsunset

@@ -28,9 +28,12 @@ in {
       [ "wayland" "windowManager" "hyprland" "xwayland" "hidpi" ]
       "HiDPI patches are deprecated. Refer to https://wiki.hyprland.org/Configuring/XWayland")
 
-    (lib.mkRenamedOptionModule # \
+    (lib.mkRemovedOptionModule # \
       [ "wayland" "windowManager" "hyprland" "nvidiaPatches" ] # \
-      [ "wayland" "windowManager" "hyprland" "enableNvidiaPatches" ])
+      "Nvidia patches are no longer needed")
+    (lib.mkRemovedOptionModule # \
+      [ "wayland" "windowManager" "hyprland" "enableNvidiaPatches" ] # \
+      "Nvidia patches are no longer needed")
 
     (lib.mkRenamedOptionModule # \
       [ "wayland" "windowManager" "hyprland" "systemdIntegration" ] # \
@@ -45,10 +48,7 @@ in {
     finalPackage = lib.mkOption {
       type = lib.types.package;
       readOnly = true;
-      default = cfg.package.override {
-        enableXWayland = cfg.xwayland.enable;
-        enableNvidiaPatches = cfg.enableNvidiaPatches;
-      };
+      default = cfg.package.override { enableXWayland = cfg.xwayland.enable; };
       defaultText = lib.literalMD
         "`wayland.windowManager.hyprland.package` with applied configuration";
       description = ''
@@ -88,7 +88,7 @@ in {
           "WAYLAND_DISPLAY"
           "XDG_CURRENT_DESKTOP"
         ];
-        example = [ "-all" ];
+        example = [ "--all" ];
         description = ''
           Environment variables to be imported in the systemd & D-Bus user
           environment.
@@ -106,9 +106,6 @@ in {
     };
 
     xwayland.enable = lib.mkEnableOption "XWayland" // { default = true; };
-
-    enableNvidiaPatches =
-      lib.mkEnableOption "patching wlroots for better Nvidia support";
 
     settings = lib.mkOption {
       type = with lib.types;
@@ -207,23 +204,41 @@ in {
         let
           indent = concatStrings (replicate indentLevel "  ");
 
+          sections = filterAttrs (n: v: isAttrs v && n != "device") attrs;
+
           mkSection = n: attrs: ''
             ${indent}${n} {
             ${toHyprconf attrs (indentLevel + 1)}${indent}}
           '';
-          sections = filterAttrs (n: v: isAttrs v) attrs;
+
+          mkDeviceCategory = device: ''
+            ${indent}device {
+              name=${device.name}
+            ${
+              toHyprconf (filterAttrs (n: _: "name" != n) device)
+              (indentLevel + 1)
+            }${indent}}
+          '';
+
+          deviceCategory = lib.optionalString (hasAttr "device" attrs)
+            (if isList attrs.device then
+              (concatMapStringsSep "\n" (d: mkDeviceCategory d) attrs.device)
+            else
+              mkDeviceCategory attrs.device);
 
           mkFields = generators.toKeyValue {
             listsAsDuplicateKeys = true;
             inherit indent;
           };
-          allFields = filterAttrs (n: v: !(isAttrs v)) attrs;
+          allFields = filterAttrs (n: v: !(isAttrs v) && n != "device") attrs;
+
           importantFields = filterAttrs (n: _:
             (hasPrefix "$" n) || (hasPrefix "bezier" n)
             || (cfg.sourceFirst && (hasPrefix "source" n))) allFields;
+
           fields = builtins.removeAttrs allFields
             (mapAttrsToList (n: _: n) importantFields);
-        in mkFields importantFields
+        in mkFields importantFields + deviceCategory
         + concatStringsSep "\n" (mapAttrsToList mkSection sections)
         + mkFields fields;
 
@@ -247,10 +262,8 @@ in {
       onChange = lib.mkIf (cfg.package != null) ''
         ( # Execute in subshell so we don't poision environment with vars
           if [[ -d "/tmp/hypr" ]]; then
-            # This var must be set for hyprctl to function, but the value doesn't matter.
-            export HYPRLAND_INSTANCE_SIGNATURE="bogus"
             for i in $(${cfg.finalPackage}/bin/hyprctl instances -j | jq ".[].instance" -r); do
-              HYPRLAND_INSTANCE_SIGNATURE=$i ${cfg.finalPackage}/bin/hyprctl reload config-only
+              ${cfg.finalPackage}/bin/hyprctl -i "$i" reload config-only
             done
           fi
         )

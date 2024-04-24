@@ -459,7 +459,7 @@ in {
                       {
                         name = "wiki";
                         tags = [ "wiki" "nix" ];
-                        url = "https://nixos.wiki/";
+                        url = "https://wiki.nixos.org/";
                       }
                     ];
                   }
@@ -545,8 +545,8 @@ in {
                     };
 
                     "NixOS Wiki" = {
-                      urls = [{ template = "https://nixos.wiki/index.php?search={searchTerms}"; }];
-                      iconUpdateURL = "https://nixos.wiki/favicon.png";
+                      urls = [{ template = "https://wiki.nixos.org/index.php?search={searchTerms}"; }];
+                      iconUpdateURL = "https://wiki.nixos.org/favicon.png";
                       updateInterval = 24 * 60 * 60 * 1000; # every day
                       definedAliases = [ "@nw" ];
                     };
@@ -571,6 +571,17 @@ in {
                   absolute icon paths.
                 '';
               };
+            };
+
+            containersForce = mkOption {
+              type = types.bool;
+              default = false;
+              description = ''
+                Whether to force replace the existing containers
+                configuration. This is recommended since Firefox will
+                replace the symlink on every launch, but note that you'll
+                lose any existing configuration by enabling this.
+              '';
             };
 
             containers = mkOption {
@@ -762,6 +773,7 @@ in {
 
       "${profilesPath}/${profile.path}/containers.json" =
         mkIf (profile.containers != { }) {
+          force = profile.containersForce;
           text = mkContainersJson profile.containers;
         };
 

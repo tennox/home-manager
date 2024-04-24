@@ -34,6 +34,7 @@ let
     ./misc/numlock.nix
     ./misc/pam.nix
     ./misc/qt.nix
+    ./misc/qt/kconfig.nix
     ./misc/specialisation.nix
     ./misc/submodule-support.nix
     ./misc/tmpfiles.nix
@@ -72,6 +73,7 @@ let
     ./programs/broot.nix
     ./programs/browserpass.nix
     ./programs/btop.nix
+    ./programs/bun.nix
     ./programs/carapace.nix
     ./programs/cava.nix
     ./programs/chromium.nix
@@ -85,6 +87,7 @@ let
     ./programs/emacs.nix
     ./programs/eww.nix
     ./programs/eza.nix
+    ./programs/fd.nix
     ./programs/feh.nix
     ./programs/firefox.nix
     ./programs/fish.nix
@@ -124,6 +127,7 @@ let
     ./programs/jq.nix
     ./programs/jujutsu.nix
     ./programs/joshuto.nix
+    ./programs/joplin-desktop.nix
     ./programs/just.nix
     ./programs/k9s.nix
     ./programs/kakoune.nix
@@ -182,6 +186,7 @@ let
     ./programs/pistol.nix
     ./programs/piston-cli.nix
     ./programs/pls.nix
+    ./programs/poetry.nix
     ./programs/powerline-go.nix
     ./programs/pqiv.nix
     ./programs/pubs.nix
@@ -189,6 +194,7 @@ let
     ./programs/pylint.nix
     ./programs/qcal.nix
     ./programs/qutebrowser.nix
+    ./programs/ranger.nix
     ./programs/rbw.nix
     ./programs/readline.nix
     ./programs/rio.nix
@@ -207,6 +213,7 @@ let
     ./programs/sioyek.nix
     ./programs/skim.nix
     ./programs/sm64ex.nix
+    ./programs/spotify-player.nix
     ./programs/sqls.nix
     ./programs/ssh.nix
     ./programs/starship.nix
@@ -224,6 +231,7 @@ let
     ./programs/tiny.nix
     ./programs/tmate.nix
     ./programs/tmux.nix
+    ./programs/tofi.nix
     ./programs/topgrade.nix
     ./programs/translate-shell.nix
     ./programs/urxvt.nix
@@ -247,11 +255,14 @@ let
     ./programs/z-lua.nix
     ./programs/zathura.nix
     ./programs/zellij.nix
+    ./programs/zk.nix
     ./programs/zoxide.nix
     ./programs/zplug.nix
     ./programs/zsh.nix
     ./programs/zsh/prezto.nix
     ./programs/zsh/zsh-abbr.nix
+    ./services/activitywatch.nix
+    ./services/amberol.nix
     ./services/arrpc.nix
     ./services/autorandr.nix
     ./services/avizo.nix
@@ -332,6 +343,7 @@ let
     ./services/recoll.nix
     ./services/redshift-gammastep/gammastep.nix
     ./services/redshift-gammastep/redshift.nix
+    ./services/remmina.nix
     ./services/rsibreak.nix
     ./services/safeeyes.nix
     ./services/screen-locker.nix
@@ -364,6 +376,7 @@ let
     ./services/window-managers/i3-sway/i3.nix
     ./services/window-managers/i3-sway/sway.nix
     ./services/window-managers/i3-sway/swaynag.nix
+    ./services/window-managers/river.nix
     ./services/window-managers/spectrwm.nix
     ./services/window-managers/xmonad.nix
     ./services/wlsunset.nix

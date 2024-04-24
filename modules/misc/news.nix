@@ -1414,6 +1414,129 @@ in {
           A new module is available: 'programs.jetbrains-remote'
         '';
       }
+
+      {
+        time = "2024-02-21T23:01:27+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'wayland.windowManager.river'.
+        '';
+      }
+
+      {
+        time = "2024-03-08T22:20:04+00:00";
+        message = ''
+          A new module is available: 'programs.zk'
+        '';
+      }
+
+      {
+        time = "2024-03-08T22:23:24+00:00";
+        message = ''
+          A new module is available: 'programs.ranger'.
+        '';
+      }
+
+      {
+        time = "2024-03-13T13:28:22+00:00";
+        message = ''
+          A new module is available: 'programs.joplin-desktop'.
+        '';
+      }
+
+      {
+        time = "2024-03-14T07:22:09+00:00";
+        condition = config.services.gpg-agent.enable;
+        message = ''
+          'services.gpg-agent.pinentryFlavor' has been removed and replaced by
+          'services.gpg-agent.pinentryPackage'.
+        '';
+      }
+
+      {
+        time = "2024-03-14T07:22:59+00:00";
+        condition = config.programs.rbw.enable;
+        message = ''
+          'programs.rbw.pinentry' has been simplified to only accept 'null' or
+          a package.
+        '';
+      }
+
+      {
+        time = "2024-03-15T08:39:52+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.activitywatch'.
+        '';
+      }
+
+      {
+        time = "2024-03-28T17:02:19+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.amberol'.
+        '';
+      }
+
+      {
+        time = "2024-04-08T21:43:38+00:00";
+        message = ''
+          A new module is available: 'programs.bun'.
+        '';
+      }
+
+      {
+        time = "2024-04-18T22:30:49+00:00";
+        message = ''
+          A new module is available: 'programs.fd'.
+        '';
+      }
+
+      {
+        time = "2024-04-19T09:23:52+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'programs.tofi'.
+        '';
+      }
+
+      {
+        time = "2024-04-19T10:01:55+00:00";
+        message = ''
+          A new module is available: 'programs.spotify-player'.
+        '';
+      }
+
+      {
+        time = "2024-04-19T14:53:17+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.remmina'.
+        '';
+      }
+
+      {
+        time = "2024-04-21T20:53:09+00:00";
+        message = ''
+          A new module is available: 'programs.poetry'.
+
+          Poetry is a tool that helps you manage Python project dependencies and
+          packages. See https://python-poetry.org/ for more.
+        '';
+      }
+
+      {
+        time = "2024-04-22T18:04:47+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.amberol'.
+
+          Amberol is a music player with no delusions of grandeur. If you just
+          want to play music available on your local system then Amberol is the
+          music player you are looking for. See https://apps.gnome.org/Amberol/
+          for more.
+        '';
+      }
     ];
   };
 }

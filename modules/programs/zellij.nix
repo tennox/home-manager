@@ -96,8 +96,8 @@ in {
     '');
 
     home.sessionVariables = {
-      ZELLIJ_AUTO_ATTACH = mkIf cfg.autoStartAttachIfSessionExists true;
-      ZELLIJ_AUTO_EXIT = mkIf cfg.autoStartExitShellOnZellijExit true;
+      ZELLIJ_AUTO_ATTACH = cfg.autoStartAttachIfSessionExists;
+      ZELLIJ_AUTO_EXIT = cfg.autoStartExitShellOnZellijExit;
     };
 
     programs.fish.interactiveShellInit = mkIf (cfg.enableFishIntegration

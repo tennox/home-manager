@@ -8,8 +8,7 @@ let
   yamlFormat = pkgs.formats.yaml { };
   zellijCmd = getExe cfg.package;
 
-in
-{
+in {
   meta.maintainers = [ hm.maintainers.mainrs ];
 
   options.programs.zellij = {
@@ -79,14 +78,12 @@ in
     # Zellij switched from yaml to KDL in version 0.32.0:
     # https://github.com/zellij-org/zellij/releases/tag/v0.32.0
     xdg.configFile."zellij/config.yaml" = mkIf
-      (cfg.settings != { } && (versionOlder cfg.package.version "0.32.0"))
-      {
+      (cfg.settings != { } && (versionOlder cfg.package.version "0.32.0")) {
         source = yamlFormat.generate "zellij.yaml" cfg.settings;
       };
 
     xdg.configFile."zellij/config.kdl" = mkIf
-      (cfg.settings != { } && (versionAtLeast cfg.package.version "0.32.0"))
-      {
+      (cfg.settings != { } && (versionAtLeast cfg.package.version "0.32.0")) {
         text = lib.hm.generators.toKDL { } cfg.settings;
       };
 

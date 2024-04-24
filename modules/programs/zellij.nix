@@ -95,10 +95,13 @@ in {
       eval "$(${zellijCmd} setup --generate-auto-start zsh)"
     '');
 
-    home.sessionVariables = {
-      ZELLIJ_AUTO_ATTACH = cfg.autoStartAttachIfSessionExists;
-      ZELLIJ_AUTO_EXIT = cfg.autoStartExitShellOnZellijExit;
-    };
+    home.sessionVariables =
+      mkIf (cfg.enableFishIntegration || cfg.enableFishAutoStart) {
+        ZELLIJ_AUTO_ATTACH =
+          if cfg.autoStartAttachIfSessionExists then "true" else "false";
+        ZELLIJ_AUTO_EXIT =
+          if cfg.autoStartExitShellOnZellijExit then "true" else "false";
+      };
 
     programs.fish.interactiveShellInit = mkIf (cfg.enableFishIntegration
       || cfg.enableFishAutoStart || cfg.enableFishCompletions) (mkOrder 200

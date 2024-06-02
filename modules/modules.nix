@@ -87,11 +87,13 @@ let
     ./programs/emacs.nix
     ./programs/eww.nix
     ./programs/eza.nix
+    ./programs/fastfetch.nix
     ./programs/fd.nix
     ./programs/feh.nix
     ./programs/firefox.nix
     ./programs/fish.nix
     ./programs/foot.nix
+    ./programs/freetube.nix
     ./programs/fuzzel.nix
     ./programs/fzf.nix
     ./programs/gallery-dl.nix
@@ -102,6 +104,7 @@ let
     ./programs/git-credential-oauth.nix
     ./programs/git.nix
     ./programs/gitui.nix
+    ./programs/gnome-shell.nix
     ./programs/gnome-terminal.nix
     ./programs/go.nix
     ./programs/gpg.nix
@@ -115,6 +118,7 @@ let
     ./programs/hstr.nix
     ./programs/htop.nix
     ./programs/hyfetch.nix
+    ./programs/hyprlock.nix
     ./programs/i3blocks.nix
     ./programs/i3status-rust.nix
     ./programs/i3status.nix
@@ -250,6 +254,7 @@ let
     ./programs/wpaperd.nix
     ./programs/xmobar.nix
     ./programs/xplr.nix
+    ./programs/yambar.nix
     ./programs/yazi.nix
     ./programs/yt-dlp.nix
     ./programs/z-lua.nix
@@ -278,6 +283,7 @@ let
     ./services/clipman.nix
     ./services/clipmenu.nix
     ./services/comodoro.nix
+    ./services/conky.nix
     ./services/copyq.nix
     ./services/darkman.nix
     ./services/devilspie2.nix
@@ -300,6 +306,8 @@ let
     ./services/gromit-mpx.nix
     ./services/home-manager-auto-upgrade.nix
     ./services/hound.nix
+    ./services/hypridle.nix
+    ./services/hyprpaper.nix
     ./services/imapnotify.nix
     ./services/kanshi.nix
     ./services/kbfs.nix
@@ -337,6 +345,7 @@ let
     ./services/plex-mpv-shim.nix
     ./services/polybar.nix
     ./services/poweralertd.nix
+    ./services/psd.nix
     ./services/pueue.nix
     ./services/pulseeffects.nix
     ./services/random-background.nix
@@ -354,6 +363,7 @@ let
     ./services/stalonetray.nix
     ./services/status-notifier-watcher.nix
     ./services/swayidle.nix
+    ./services/swaync.nix
     ./services/swayosd.nix
     ./services/sxhkd.nix
     ./services/syncthing.nix

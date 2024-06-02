@@ -71,6 +71,7 @@ in import nmtSrc {
     ./modules/programs/dircolors
     ./modules/programs/direnv
     ./modules/programs/emacs
+    ./modules/programs/fastfetch
     ./modules/programs/feh
     ./modules/programs/fish
     ./modules/programs/gallery-dl
@@ -190,10 +191,13 @@ in import nmtSrc {
     ./modules/programs/boxxy
     ./modules/programs/firefox
     ./modules/programs/foot
+    ./modules/programs/freetube
     ./modules/programs/fuzzel
     ./modules/programs/getmail
+    ./modules/programs/gnome-shell
     ./modules/programs/gnome-terminal
     ./modules/programs/hexchat
+    ./modules/programs/hyprlock
     ./modules/programs/i3blocks
     ./modules/programs/i3status-rust
     ./modules/programs/imv
@@ -215,6 +219,7 @@ in import nmtSrc {
     ./modules/programs/wofi
     ./modules/programs/wpaperd
     ./modules/programs/xmobar
+    ./modules/programs/yambar
     ./modules/programs/yt-dlp
     ./modules/services/activitywatch
     ./modules/services/avizo
@@ -224,6 +229,7 @@ in import nmtSrc {
     ./modules/services/cliphist
     ./modules/services/clipman
     ./modules/services/comodoro
+    ./modules/services/conky
     ./modules/services/darkman
     ./modules/services/devilspie2
     ./modules/services/dropbox
@@ -237,6 +243,8 @@ in import nmtSrc {
     ./modules/services/gpg-agent
     ./modules/services/gromit-mpx
     ./modules/services/home-manager-auto-upgrade
+    ./modules/services/hypridle
+    ./modules/services/hyprpaper
     ./modules/services/imapnotify
     ./modules/services/kanshi
     ./modules/services/lieer
@@ -260,6 +268,7 @@ in import nmtSrc {
     ./modules/services/screen-locker
     ./modules/services/signaturepdf
     ./modules/services/swayidle
+    ./modules/services/swaync
     ./modules/services/swayosd
     ./modules/services/sxhkd
     ./modules/services/syncthing/linux

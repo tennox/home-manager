@@ -1537,6 +1537,125 @@ in {
           for more.
         '';
       }
+
+      {
+        time = "2024-04-28T20:27:08+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.psd'.
+
+          Profile-sync-daemon (psd) is a tiny pseudo-daemon designed to manage
+          your browser's profile in tmpfs and to periodically sync it back to
+          your physical disc (HDD/SSD).
+        '';
+      }
+
+      {
+        time = "2024-04-29T22:01:51+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.swaync'.
+
+          SwayNotificationCenter is a simple notification daemon with a GTK GUI
+          for notifications and the control center. See
+          https://github.com/ErikReider/SwayNotificationCenter for more.
+        '';
+      }
+
+      {
+        time = "2024-04-30T18:28:28+00:00";
+        message = ''
+          A new module is available: 'programs.freetube'.
+
+          FreeTube is a YouTube client built around using YouTube more
+          privately. You can enjoy your favorite content and creators without
+          your habits being tracked. See https://freetubeapp.io/ for more.
+        '';
+      }
+
+      {
+        time = "2024-04-30T21:57:23+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.conky'.
+
+          Conky is a system monitor for X. Conky can display just about
+          anything, either on your root desktop or in its own window. See
+          https://conky.cc/ for more.
+        '';
+      }
+
+      {
+        time = "2024-05-05T07:22:01+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.hypridle'.
+
+          Hypridle is a program that monitors user activity and runs commands
+          when idle or active. See https://github.com/hyprwm/hypridle for more.
+        '';
+      }
+
+      {
+        time = "2024-05-06T07:36:13+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'programs.gnome-shell'.
+
+          GNOME Shell is the graphical shell of the GNOME desktop environment.
+          It provides basic functions like launching applications and switching
+          between windows, and is also a widget engine.
+        '';
+      }
+
+      {
+        time = "2024-05-10T10:30:58+00:00";
+        message = ''
+          A new module is available: 'programs.fastfetch'.
+
+          Fastfetch is a Neofetch-like tool for fetching system information and
+          displaying them in a pretty way. See
+          https://github.com/fastfetch-cli/fastfetch for more.
+        '';
+      }
+
+      {
+        time = "2024-05-10T11:48:34+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'programs.hyprlock'.
+
+          Hyprland's simple, yet multi-threaded and GPU-accelerated screen
+          locking utility. See https://github.com/hyprwm/hyprlock for more.
+        '';
+      }
+
+      {
+        time = "2024-05-10T13:35:19+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'services.hyprpaper'.
+
+          Hyprpaper is a blazing fast wallpaper utility for Hyprland with the
+          ability to dynamically change wallpapers through sockets. It will work
+          on all wlroots-based compositors, though. See
+          https://github.com/hyprwm/hyprpaper for more.
+        '';
+      }
+
+      {
+        time = "2024-05-10T21:28:38+00:00";
+        condition = hostPlatform.isLinux;
+        message = ''
+          A new module is available: 'programs.yambar'.
+
+          Yambar is a lightweight and configurable status panel for X11 and
+          Wayland, that goes to great lengths to be both CPU and battery
+          efficient - polling is only done when absolutely necessary.
+
+          See https://codeberg.org/dnkl/yambar for more.
+        '';
+      }
     ];
   };
 }

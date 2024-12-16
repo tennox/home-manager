@@ -50,24 +50,24 @@ in {
     };
 
     enableFishIntegration = mkEnableOption
-      "Fish integration (enables both enableFishAutoStart and enableFishCompletions)"
+      "enable fish integration (enables both enableFishAutoStart and enableFishCompletions)"
       // {
         default = false;
       };
     enableFishCompletions = mkEnableOption "load zellij completions" // {
-      default = false;
+      default = true;
     };
     enableFishAutoStart =
       mkEnableOption "autostart zellij in interactive sessions" // {
         default = false;
       };
     autoStartAttachIfSessionExists = mkEnableOption
-      "If the zellij session already exists, attach to the default session. (not starting as a new session)"
+      "attach to the default session, if a zellij session already exists (otherwise starting a new session)"
       // {
         default = false;
       };
     autoStartExitShellOnZellijExit =
-      mkEnableOption "When zellij exits, exit the shell as well." // {
+      mkEnableOption "exit the shell when zellij exits." // {
         default = false;
       };
   };

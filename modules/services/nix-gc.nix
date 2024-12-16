@@ -81,6 +81,18 @@ in {
         '';
       };
 
+      randomizedDelaySec = lib.mkOption {
+        default = "0";
+        type = lib.types.singleLineStr;
+        example = "45min";
+        description = ''
+          Add a randomized delay before each garbage collection.
+          The delay will be chosen between zero and this value.
+          This value must be a time span in the format specified by
+          {manpage}`systemd.time(7)`
+        '';
+      };
+
       options = mkOption {
         type = types.nullOr types.str;
         default = null;
@@ -88,6 +100,18 @@ in {
         description = ''
           Options given to {file}`nix-collect-garbage` when the
           garbage collector is run automatically.
+        '';
+      };
+
+      persistent = mkOption {
+        type = types.bool;
+        default = true;
+        example = false;
+        description = ''
+          If true, the time when the service unit was last triggered is
+          stored on disk. When the timer is activated, the service unit is
+          triggered immediately if it would have been triggered at least once
+          during the time when the timer was inactive.
         '';
       };
     };
@@ -98,15 +122,19 @@ in {
       systemd.user.services.nix-gc = {
         Unit = { Description = "Nix Garbage Collector"; };
         Service = {
-          ExecStart = "${nixPackage}/bin/nix-collect-garbage ${
+          Type = "oneshot";
+          ExecStart = toString (pkgs.writeShellScript "nix-gc"
+            "exec ${nixPackage}/bin/nix-collect-garbage ${
               lib.optionalString (cfg.options != null) cfg.options
-            }";
+            }");
         };
       };
       systemd.user.timers.nix-gc = {
         Unit = { Description = "Nix Garbage Collector"; };
         Timer = {
           OnCalendar = "${cfg.frequency}";
+          RandomizedDelaySec = cfg.randomizedDelaySec;
+          Persistent = cfg.persistent;
           Unit = "nix-gc.service";
         };
         Install = { WantedBy = [ "timers.target" ]; };

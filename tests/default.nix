@@ -9,31 +9,257 @@ let
     sha256 = "0qhn7nnwdwzh910ss78ga2d00v42b0lspfd7ybl61mpfgz3lmdcj";
   };
 
+  # Recursively replace each derivation in the given attribute set with the same
+  # derivation but with the `outPath` attribute set to the string
+  # `"@package-name@"`. This allows the tests to refer to derivations through
+  # their values without establishing an actual dependency on the derivation
+  # output.
+  scrubDerivation = name: value:
+    let
+      scrubbedValue = scrubDerivations value;
+
+      newDrvAttrs = {
+        buildScript = abort "no build allowed";
+
+        outPath = builtins.traceVerbose "${name} - got out path"
+          "@${lib.getName value}@";
+
+        # Prevent getOutput from descending into outputs
+        outputSpecified = true;
+
+        # Allow the original package to be used in derivation inputs
+        __spliced = {
+          buildHost = value;
+          hostTarget = value;
+        };
+      };
+    in if lib.isAttrs value then
+      if lib.isDerivation value then
+        scrubbedValue // newDrvAttrs
+      else
+        scrubbedValue
+    else
+      value;
+  scrubDerivations = attrs: let in lib.mapAttrs scrubDerivation attrs;
+
+  # Globally unscrub a few selected packages that are used by a wide selection of tests.
+  whitelist = let
+    inner = self: super: {
+      inherit (pkgs)
+        coreutils jq desktop-file-utils diffutils findutils glibcLocales gettext
+        gnugrep gnused shared-mime-info emptyDirectory
+        # Needed by pretty much all tests that have anything to do with fish.
+        babelfish fish;
+
+      xorg =
+        super.xorg.overrideScope (self: super: { inherit (pkgs.xorg) lndir; });
+    };
+
+    outer = self: super:
+      inner self super // {
+        buildPackages = super.buildPackages.extend inner;
+      };
+  in outer;
+
+  # TODO: figure out stdenv stubbing so we don't have to do this
+  darwinBlacklist = let
+    # List of packages that need to be scrubbed on Darwin
+    # Packages are scrubbed in linux and expected in test output
+    packagesToScrub = [
+      "aerc"
+      "alot"
+      "antidote"
+      "aria2"
+      "atuin"
+      "autojump"
+      "bacon"
+      "bash"
+      "bash-completion"
+      "bat"
+      "borgmatic"
+      "bottom"
+      "broot"
+      "browserpass"
+      "btop"
+      "carapace"
+      "cava"
+      "cmus"
+      "comodoro"
+      "darcs"
+      "dircolors"
+      "delta"
+      "direnv"
+      "earthly"
+      "emacs"
+      "espanso"
+      "fastfetch"
+      "feh"
+      "gallery-dl"
+      "gh"
+      "gh-dash"
+      "ghostty"
+      "git"
+      "git-cliff"
+      "git-credential-oauth"
+      "git-worktree-switcher"
+      "gnupg"
+      "go"
+      "granted"
+      "helix"
+      "himalaya"
+      "htop"
+      "hyfetch"
+      "i3status"
+      "irssi"
+      "jankyborders"
+      "jujutsu"
+      "joplin-desktop"
+      "jqp"
+      "k9s"
+      "kakoune"
+      "khal"
+      "khard"
+      "kitty"
+      "kubecolor"
+      "lapce"
+      "lazydocker"
+      "lazygit"
+      "ledger"
+      "less"
+      "lesspipe"
+      "lf"
+      "lsd"
+      "lieer"
+      "mbsync"
+      "micro"
+      "mise"
+      "mpv"
+      "mu"
+      "mujmap"
+      "msmtp"
+      "ne"
+      "neomutt"
+      "neovide"
+      "nheko"
+      "nix"
+      "nix-index"
+      "nix-your-shell"
+      "ollama"
+      "onlyoffice-desktopeditors"
+      "openstackclient"
+      "papis"
+      "pay-respects"
+      "pet"
+      "pistol"
+      "pls"
+      "poetry"
+      "powerline-go"
+      "pubs"
+      "pyenv"
+      "qcal"
+      "qutebrowser"
+      "ranger"
+      "rio"
+      "ripgrep"
+      "ruff"
+      "sage"
+      "sapling"
+      "sbt"
+      "scmpuff"
+      "senpai"
+      "sftpman"
+      "sioyek"
+      "skhd"
+      "sm64ex"
+      "spotify-player"
+      "starship"
+      "taskwarrior"
+      "tealdeer"
+      "texlive"
+      "thefuck"
+      "thunderbird"
+      "tmate"
+      "topgrade"
+      "translate-shell"
+      "vifm"
+      "vim-vint"
+      "vscode"
+      "watson"
+      "wezterm"
+      "yazi"
+      "yubikey-agent"
+      "zed-editor"
+      "zellij"
+      "zk"
+      "zplug"
+      "zsh"
+    ];
+
+    inner = self: super:
+      lib.mapAttrs (name: value:
+        if lib.elem name packagesToScrub then
+        # Apply scrubbing to this specific package
+          scrubDerivation name value
+        else
+          value) super;
+
+    outer = self: super:
+      inner self super // {
+        buildPackages = super.buildPackages.extend inner;
+      };
+  in outer;
+
+  scrubbedPkgs =
+    # TODO: fix darwin stdenv stubbing
+    if isDarwin then
+      let rawPkgs = lib.makeExtensible (final: pkgs);
+      in builtins.traceVerbose "eval scrubbed darwin nixpkgs"
+      (rawPkgs.extend darwinBlacklist)
+    else
+      let rawScrubbedPkgs = lib.makeExtensible (final: scrubDerivations pkgs);
+      in builtins.traceVerbose "eval scrubbed nixpkgs"
+      (rawScrubbedPkgs.extend whitelist);
+
   modules = import ../modules/modules.nix {
     inherit lib pkgs;
     check = false;
-  } ++ [{
-    # Bypass <nixpkgs> reference inside modules/modules.nix to make the test
-    # suite more pure.
-    _module.args.pkgsPath = pkgs.path;
+  } ++ [
+    ({ config, ... }: {
+      _module.args = {
+        # Prevent the nixpkgs module from working. We want to minimize the number
+        # of evaluations of Nixpkgs.
+        pkgsPath = abort "pkgs path is unavailable in tests";
+        realPkgs = pkgs;
+        pkgs = let
+          overlays = config.test.stubOverlays ++ lib.optionals
+            (config.nixpkgs.overlays != null && config.nixpkgs.overlays != [ ])
+            config.nixpkgs.overlays;
+          stubbedPkgs = if overlays == [ ] then
+            scrubbedPkgs
+          else
+            builtins.traceVerbose "eval overlayed nixpkgs"
+            (lib.foldr (o: p: p.extend o) scrubbedPkgs overlays);
+        in lib.mkImageMediaOverride stubbedPkgs;
+      };
 
-    # Fix impurities. Without these some of the user's environment
-    # will leak into the tests through `builtins.getEnv`.
-    xdg.enable = true;
-    home = {
-      username = "hm-user";
-      homeDirectory = "/home/hm-user";
-      stateVersion = lib.mkDefault "18.09";
-    };
+      # Fix impurities. Without these some of the user's environment
+      # will leak into the tests through `builtins.getEnv`.
+      xdg.enable = lib.mkDefault true;
+      home = {
+        username = "hm-user";
+        homeDirectory = "/home/hm-user";
+        stateVersion = lib.mkDefault "18.09";
+      };
 
-    # Avoid including documentation since this will cause
-    # unnecessary rebuilds of the tests.
-    manual.manpages.enable = lib.mkDefault false;
+      # Avoid including documentation since this will cause
+      # unnecessary rebuilds of the tests.
+      manual.manpages.enable = lib.mkDefault false;
 
-    imports = [ ./asserts.nix ./big-test.nix ./stubs.nix ];
+      imports = [ ./asserts.nix ./big-test.nix ./stubs.nix ];
 
-    test.enableBig = enableBig;
-  }];
+      test.enableBig = enableBig;
+    })
+  ];
 
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
@@ -50,6 +276,7 @@ in import nmtSrc {
     ./modules/misc/manual
     ./modules/misc/nix
     ./modules/misc/specialisation
+    ./modules/misc/xdg
     ./modules/programs/aerc
     ./modules/programs/alacritty
     ./modules/programs/alot
@@ -72,6 +299,7 @@ in import nmtSrc {
     ./modules/programs/darcs
     ./modules/programs/dircolors
     ./modules/programs/direnv
+    ./modules/programs/earthly
     ./modules/programs/emacs
     ./modules/programs/fastfetch
     ./modules/programs/feh
@@ -79,9 +307,12 @@ in import nmtSrc {
     ./modules/programs/gallery-dl
     ./modules/programs/gh
     ./modules/programs/gh-dash
+    ./modules/programs/ghostty
     ./modules/programs/git
     ./modules/programs/git-cliff
     ./modules/programs/git-credential-oauth
+    ./modules/programs/git-worktree-switcher
+    ./modules/programs/go
     ./modules/programs/gpg
     ./modules/programs/gradle
     ./modules/programs/granted
@@ -93,14 +324,18 @@ in import nmtSrc {
     ./modules/programs/irssi
     ./modules/programs/jujutsu
     ./modules/programs/joplin-desktop
+    ./modules/programs/jqp
     ./modules/programs/k9s
     ./modules/programs/kakoune
     ./modules/programs/khal
     ./modules/programs/khard
     ./modules/programs/kitty
     ./modules/programs/kubecolor
+    ./modules/programs/lapce
     ./modules/programs/ledger
+    ./modules/programs/lazydocker
     ./modules/programs/less
+    ./modules/programs/lesspipe
     ./modules/programs/lf
     ./modules/programs/lsd
     ./modules/programs/lieer
@@ -108,6 +343,7 @@ in import nmtSrc {
     ./modules/programs/mbsync
     ./modules/programs/micro
     ./modules/programs/mise
+    ./modules/programs/mods
     ./modules/programs/mpv
     ./modules/programs/mu
     ./modules/programs/mujmap
@@ -123,9 +359,11 @@ in import nmtSrc {
     ./modules/programs/nnn
     ./modules/programs/nushell
     ./modules/programs/oh-my-posh
+    ./modules/programs/onlyoffice
     ./modules/programs/openstackclient
     ./modules/programs/pandoc
     ./modules/programs/papis
+    ./modules/programs/pay-respects
     ./modules/programs/pet
     ./modules/programs/pistol
     ./modules/programs/pls
@@ -153,8 +391,10 @@ in import nmtSrc {
     ./modules/programs/starship
     ./modules/programs/taskwarrior
     ./modules/programs/tealdeer
+    ./modules/programs/tex-fmt
     ./modules/programs/texlive
     ./modules/programs/thefuck
+    ./modules/programs/thunderbird
     ./modules/programs/tmate
     ./modules/programs/tmux
     ./modules/programs/topgrade
@@ -175,13 +415,21 @@ in import nmtSrc {
     ./modules/xresources
   ] ++ lib.optionals isDarwin [
     ./modules/launchd
+    ./modules/programs/aerospace
     ./modules/services/emacs-darwin
     ./modules/services/espanso-darwin
     ./modules/services/git-sync-darwin
     ./modules/services/imapnotify-darwin
+    ./modules/services/jankyborders
+    ./modules/services/macos-remap-keys
     ./modules/services/nix-gc-darwin
+    ./modules/services/ollama/darwin
+    ./modules/services/skhd
+    ./modules/services/yubikey-agent-darwin
     ./modules/targets-darwin
   ] ++ lib.optionals isLinux [
+    ./modules/misc/xdg/linux.nix
+    ./modules/config/home-cursor
     ./modules/config/i18n
     ./modules/i18n/input-method
     ./modules/misc/debug
@@ -190,7 +438,6 @@ in import nmtSrc {
     ./modules/misc/numlock
     ./modules/misc/pam
     ./modules/misc/qt
-    ./modules/misc/xdg
     ./modules/misc/xsession
     ./modules/programs/abook
     ./modules/programs/autorandr
@@ -198,8 +445,13 @@ in import nmtSrc {
     ./modules/programs/beets # One test relies on services.mpd
     ./modules/programs/bemenu
     ./modules/programs/boxxy
+    ./modules/programs/cavalier
+    ./modules/programs/distrobox
+    ./modules/programs/eww
+    ./modules/programs/firefox
     ./modules/programs/firefox/firefox.nix
     ./modules/programs/firefox/floorp.nix
+    ./modules/programs/firefox/librewolf.nix
     ./modules/programs/foot
     ./modules/programs/freetube
     ./modules/programs/fuzzel
@@ -219,15 +471,15 @@ in import nmtSrc {
     ./modules/programs/rbw
     ./modules/programs/rofi
     ./modules/programs/rofi-pass
+    ./modules/programs/swayimg
     ./modules/programs/swaylock
     ./modules/programs/swayr
     ./modules/programs/terminator
-    ./modules/programs/thunderbird
     ./modules/programs/tofi
+    ./modules/programs/vinegar
     ./modules/programs/waybar
     ./modules/programs/wlogout
     ./modules/programs/wofi
-    ./modules/programs/wpaperd
     ./modules/programs/xmobar
     ./modules/programs/yambar
     ./modules/programs/yt-dlp
@@ -239,11 +491,14 @@ in import nmtSrc {
     ./modules/services/cachix-agent
     ./modules/services/cliphist
     ./modules/services/clipman
+    ./modules/services/clipse
     ./modules/services/comodoro
+    ./modules/services/copyq
     ./modules/services/conky
     ./modules/services/darkman
     ./modules/services/devilspie2
     ./modules/services/dropbox
+    ./modules/services/easyeffects
     ./modules/services/emacs
     ./modules/services/espanso
     ./modules/services/flameshot
@@ -256,14 +511,18 @@ in import nmtSrc {
     ./modules/services/home-manager-auto-upgrade
     ./modules/services/hypridle
     ./modules/services/hyprpaper
+    ./modules/services/hyprpolkitagent
     ./modules/services/imapnotify
     ./modules/services/kanshi
     ./modules/services/lieer
+    ./modules/services/linux-wallpaperengine
+    ./modules/services/lxqt-policykit-agent
     ./modules/services/mopidy
     ./modules/services/mpd
     ./modules/services/mpd-mpris
     ./modules/services/mpdris2
     ./modules/services/nix-gc
+    ./modules/services/ollama/linux
     ./modules/services/osmscout-server
     ./modules/services/pantalaimon
     ./modules/services/parcellite
@@ -273,6 +532,7 @@ in import nmtSrc {
     ./modules/services/picom
     ./modules/services/playerctld
     ./modules/services/podman-linux
+    ./modules/services/polkit-gnome
     ./modules/services/polybar
     ./modules/services/recoll
     ./modules/services/redshift-gammastep
@@ -283,8 +543,10 @@ in import nmtSrc {
     ./modules/services/swayidle
     ./modules/services/swaync
     ./modules/services/swayosd
+    ./modules/services/swww
     ./modules/services/sxhkd
     ./modules/services/syncthing/linux
+    ./modules/services/tldr-update
     ./modules/services/trayer
     ./modules/services/trayscale
     ./modules/services/twmn
@@ -297,9 +559,12 @@ in import nmtSrc {
     ./modules/services/window-managers/river
     ./modules/services/window-managers/spectrwm
     ./modules/services/window-managers/sway
+    ./modules/services/window-managers/wayfire
     ./modules/services/wlsunset
     ./modules/services/wob
+    ./modules/services/wpaperd
     ./modules/services/xsettingsd
+    ./modules/services/yubikey-agent
     ./modules/systemd
     ./modules/targets-linux
   ]);

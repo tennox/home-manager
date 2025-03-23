@@ -21,26 +21,21 @@
   xdg.dataFile."fish/home-manager_generated_completions".source =
     lib.mkForce (builtins.toFile "empty" "");
 
-  test.stubs = {
-    zsh = { };
-    zellij = { };
-  };
-
   nmt.script = ''
     assertFileExists home-files/.bashrc
     assertFileContains \
       home-files/.bashrc \
-      'eval "$(@zellij@/bin/dummy setup --generate-auto-start bash)"'
+      'eval "$(@zellij@/bin/zellij setup --generate-auto-start bash)"'
 
     assertFileExists home-files/.zshrc
     assertFileContains \
       home-files/.zshrc \
-      'eval "$(@zellij@/bin/dummy setup --generate-auto-start zsh)"'
+      'eval "$(@zellij@/bin/zellij setup --generate-auto-start zsh)"'
 
     assertFileExists home-files/.config/fish/config.fish
     assertFileContains \
       home-files/.config/fish/config.fish \
-      'eval (@zellij@/bin/dummy setup --generate-auto-start fish | string collect)'
+      'eval (@zellij@/bin/zellij setup --generate-auto-start fish | string collect)'
     assertFileContains \
       home-files/.config/fish/config.fish \
       'eval (@zellij@/bin/dummy setup --generate-completion fish | string collect)'

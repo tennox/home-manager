@@ -10,8 +10,12 @@ let
     };
 
   tests = {
+    home-with-symbols = runTest ./standalone/home-with-symbols.nix;
     kitty = runTest ./standalone/kitty.nix;
+    mu = runTest ./standalone/mu;
+    nh = runTest ./standalone/nh.nix;
     nixos-basics = runTest ./nixos/basics.nix;
+    rclone = runTest ./standalone/rclone;
     standalone-flake-basics = runTest ./standalone/flake-basics.nix;
     standalone-standard-basics = runTest ./standalone/standard-basics.nix;
   };

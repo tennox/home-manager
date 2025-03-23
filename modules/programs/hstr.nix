@@ -16,13 +16,11 @@ in {
 
     package = mkPackageOption pkgs "hstr" { };
 
-    enableBashIntegration = mkEnableOption "Bash integration" // {
-      default = true;
-    };
+    enableBashIntegration =
+      lib.hm.shell.mkBashIntegrationOption { inherit config; };
 
-    enableZshIntegration = mkEnableOption "Zsh integration" // {
-      default = true;
-    };
+    enableZshIntegration =
+      lib.hm.shell.mkZshIntegrationOption { inherit config; };
   };
 
   config = mkIf cfg.enable {
@@ -32,7 +30,7 @@ in {
       eval "$(${cfg.package}/bin/hstr --show-configuration)"
     '';
 
-    programs.zsh.initExtra = mkIf cfg.enableZshIntegration ''
+    programs.zsh.initContent = mkIf cfg.enableZshIntegration ''
       eval "$(${cfg.package}/bin/hstr --show-zsh-configuration)"
     '';
   };

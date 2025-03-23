@@ -8,7 +8,8 @@ let
   yamlFormat = pkgs.formats.yaml { };
   zellijCmd = getExe cfg.package;
 
-in {
+in
+{
   meta.maintainers = with hm.maintainers; [ mainrs tennox ];
 
   options.programs.zellij = {
@@ -34,26 +35,25 @@ in {
       '';
       description = ''
         Configuration written to
-        {file}`$XDG_CONFIG_HOME/zellij/config.yaml`.
+        {file}`$XDG_CONFIG_HOME/zellij/config.kdl`.
+
+        If `programs.zellij.package.version` is older than 0.32.0, then
+        the configuration is written to {file}`$XDG_CONFIG_HOME/zellij/config.yaml`.
 
         See <https://zellij.dev/documentation> for the full
         list of options.
       '';
     };
 
-    enableBashIntegration = mkEnableOption "Bash integration" // {
-      default = false;
-    };
+    enableBashIntegration =
+      lib.hm.shell.mkBashIntegrationOption { inherit config; };
 
-    enableZshIntegration = mkEnableOption "Zsh integration" // {
-      default = false;
-    };
+    enableFishIntegration =
+      lib.hm.shell.mkFishIntegrationOption { inherit config; extraDescription = "Enables both enableFishAutoStart and enableFishCompletions"; };
 
-    enableFishIntegration = mkEnableOption
-      "enable fish integration (enables both enableFishAutoStart and enableFishCompletions)"
-      // {
-        default = false;
-      };
+    enableZshIntegration =
+      lib.hm.shell.mkZshIntegrationOption { inherit config; };
+
     enableFishCompletions = mkEnableOption "load zellij completions" // {
       default = true;
     };
@@ -63,9 +63,9 @@ in {
       };
     autoStartAttachIfSessionExists = mkEnableOption
       "attach to the default session, if a zellij session already exists (otherwise starting a new session)"
-      // {
-        default = false;
-      };
+    // {
+      default = false;
+    };
     autoStartExitShellOnZellijExit =
       mkEnableOption "exit the shell when zellij exits." // {
         default = false;
@@ -78,12 +78,14 @@ in {
     # Zellij switched from yaml to KDL in version 0.32.0:
     # https://github.com/zellij-org/zellij/releases/tag/v0.32.0
     xdg.configFile."zellij/config.yaml" = mkIf
-      (cfg.settings != { } && (versionOlder cfg.package.version "0.32.0")) {
+      (cfg.settings != { } && (versionOlder cfg.package.version "0.32.0"))
+      {
         source = yamlFormat.generate "zellij.yaml" cfg.settings;
       };
 
     xdg.configFile."zellij/config.kdl" = mkIf
-      (cfg.settings != { } && (versionAtLeast cfg.package.version "0.32.0")) {
+      (cfg.settings != { } && (versionAtLeast cfg.package.version "0.32.0"))
+      {
         text = lib.hm.generators.toKDL { } cfg.settings;
       };
 
@@ -91,7 +93,7 @@ in {
       eval "$(${zellijCmd} setup --generate-auto-start bash)"
     '');
 
-    programs.zsh.initExtra = mkIf cfg.enableZshIntegration (mkOrder 200 ''
+    programs.zsh.initContent = mkIf cfg.enableZshIntegration (mkOrder 200 ''
       eval "$(${zellijCmd} setup --generate-auto-start zsh)"
     '');
 
@@ -102,15 +104,17 @@ in {
         if cfg.autoStartExitShellOnZellijExit then "true" else "false";
     };
 
-    programs.fish.interactiveShellInit = mkIf (cfg.enableFishIntegration
-      || cfg.enableFishAutoStart || cfg.enableFishCompletions) (mkOrder 200
+    programs.fish.interactiveShellInit = mkIf
+      (cfg.enableFishIntegration
+        || cfg.enableFishAutoStart || cfg.enableFishCompletions)
+      (mkOrder 200
         ((if cfg.enableFishIntegration || cfg.enableFishCompletions then ''
           eval (${zellijCmd} setup --generate-completion fish | string collect)
         '' else
           "") + (if cfg.enableFishIntegration || cfg.enableFishAutoStart then ''
-            eval (${zellijCmd} setup --generate-auto-start fish | string collect)
-          '' else
-            "")));
+          eval (${zellijCmd} setup --generate-auto-start fish | string collect)
+        '' else
+          "")));
 
   };
 }

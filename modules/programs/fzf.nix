@@ -45,6 +45,8 @@ in {
       "This option is no longer supported by fzf.")
   ];
 
+  meta.maintainers = with lib.maintainers; [ khaneliman ];
+
   options.programs.fzf = {
     enable = mkEnableOption "fzf - a command-line fuzzy finder";
 
@@ -156,29 +158,14 @@ in {
       };
     };
 
-    enableBashIntegration = mkOption {
-      default = true;
-      type = types.bool;
-      description = ''
-        Whether to enable Bash integration.
-      '';
-    };
+    enableBashIntegration =
+      lib.hm.shell.mkBashIntegrationOption { inherit config; };
 
-    enableZshIntegration = mkOption {
-      default = true;
-      type = types.bool;
-      description = ''
-        Whether to enable Zsh integration.
-      '';
-    };
+    enableFishIntegration =
+      lib.hm.shell.mkFishIntegrationOption { inherit config; };
 
-    enableFishIntegration = mkOption {
-      default = true;
-      type = types.bool;
-      description = ''
-        Whether to enable Fish integration.
-      '';
-    };
+    enableZshIntegration =
+      lib.hm.shell.mkZshIntegrationOption { inherit config; };
   };
 
   config = mkIf cfg.enable {
@@ -208,7 +195,7 @@ in {
     # Note, since fzf unconditionally binds C-r we use `mkOrder` to make the
     # initialization show up a bit earlier. This is to make initialization of
     # other history managers, like mcfly or atuin, take precedence.
-    programs.zsh.initExtra =
+    programs.zsh.initContent =
       mkIf cfg.enableZshIntegration (mkOrder 200 zshIntegration);
 
     programs.fish.interactiveShellInit =

@@ -191,7 +191,7 @@ function setFlakeAttribute() {
         fi
 
         if [[ -v configFlake ]]; then
-            FLAKE_ARG="path:$(dirname "$(readlink -f "$configFlake")")"
+            FLAKE_ARG="$(dirname "$(readlink -f "$configFlake")")"
         fi
     fi
 
@@ -791,8 +791,8 @@ function buildNews() {
     nix-instantiate \
         --no-build-output --strict \
         --eval '<home-manager/home-manager/build-news.nix>' \
-        --arg newsJsonFile "$newsJsonFile" \
-        --arg newsReadIdsFile "$readIdsFile" \
+        --arg newsJsonFile "\"$(escapeForNix "$newsJsonFile")\"" \
+        --arg newsReadIdsFile "\"$(escapeForNix "$readIdsFile")\"" \
         "${extraArgs[@]}" \
         > "$newsNixFile"
 }
@@ -807,23 +807,23 @@ function doShowNews() {
     local readIdsFile
     readIdsFile="$(newsReadIdsFile)"
 
-    local news
+    local newsAttr
 
-    # shellcheck disable=2154,2046
     case $1 in
         --all)
-            news="$(nix-instantiate --quiet --eval --expr "(import ${newsNixFile}).news.all")"
+            newsAttr="all"
             ;;
         --unread)
-            news="$(nix-instantiate --quiet --eval --expr "(import ${newsNixFile}).news.unread")"
+            newsAttr="unread"
             ;;
         *)
             _i 'Unknown argument %s' "$1"
             return 1
     esac
 
-    # Prints the news without surrounding quotes.
-    echo -e "${news:1:-1}" | ${PAGER:-less}
+    nix-instantiate --quiet --eval --json --expr "(import ${newsNixFile}).news.$newsAttr" \
+        | jq -r . \
+        | ${PAGER:-less}
 
     local allIds
     allIds="$(nix-instantiate --quiet --eval --expr "(import ${newsNixFile}).meta.ids")"
@@ -907,6 +907,7 @@ function doHelp() {
     echo "  -j, --max-jobs NUM"
     echo "  --option NAME VALUE"
     echo "  -L, --print-build-logs"
+    echo "  --log-format FORMAT"
     echo "  --show-trace"
     echo "  --(no-)substitute"
     echo "  --no-out-link            Do not create a symlink to the output path"
@@ -1036,7 +1037,7 @@ while [[ $# -gt 0 ]]; do
             PASSTHROUGH_OPTS+=("$opt" "$1" "$2")
             shift 2
             ;;
-        -j|--max-jobs|--cores|--builders)
+        -j|--max-jobs|--cores|--builders|--log-format)
             [[ -v 1 && $1 != -* ]] || errMissingOptArg "$opt"
             PASSTHROUGH_OPTS+=("$opt" "$1")
             shift

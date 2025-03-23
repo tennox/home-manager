@@ -281,14 +281,14 @@ in {
           '';
         };
 
+        package = mkPackageOption pkgs "difftastic" { };
+
         enableAsDifftool = mkEnableOption "" // {
           description = ''
             Enable the {command}`difftastic` syntax highlighter as a git difftool.
             See <https://github.com/Wilfred/difftastic>.
           '';
         };
-
-        package = mkPackageOption pkgs "difftastic" { };
 
         background = mkOption {
           type = types.enum [ "light" "dark" ];

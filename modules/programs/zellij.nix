@@ -8,8 +8,7 @@ let
   yamlFormat = pkgs.formats.yaml { };
   zellijCmd = getExe cfg.package;
 
-in
-{
+in {
   meta.maintainers = with hm.maintainers; [ mainrs tennox ];
 
   options.programs.zellij = {
@@ -48,8 +47,11 @@ in
     enableBashIntegration =
       lib.hm.shell.mkBashIntegrationOption { inherit config; };
 
-    enableFishIntegration =
-      lib.hm.shell.mkFishIntegrationOption { inherit config; extraDescription = "Enables both enableFishAutoStart and enableFishCompletions"; };
+    enableFishIntegration = lib.hm.shell.mkFishIntegrationOption {
+      inherit config;
+      extraDescription =
+        "Enables both enableFishAutoStart and enableFishCompletions";
+    };
 
     enableZshIntegration =
       lib.hm.shell.mkZshIntegrationOption { inherit config; };
@@ -63,9 +65,9 @@ in
       };
     autoStartAttachIfSessionExists = mkEnableOption
       "attach to the default session, if a zellij session already exists (otherwise starting a new session)"
-    // {
-      default = false;
-    };
+      // {
+        default = false;
+      };
     autoStartExitShellOnZellijExit =
       mkEnableOption "exit the shell when zellij exits." // {
         default = false;
@@ -104,17 +106,15 @@ in
         if cfg.autoStartExitShellOnZellijExit then "true" else "false";
     };
 
-    programs.fish.interactiveShellInit = mkIf
-      (cfg.enableFishIntegration
-        || cfg.enableFishAutoStart || cfg.enableFishCompletions)
-      (mkOrder 200
+    programs.fish.interactiveShellInit = mkIf (cfg.enableFishIntegration
+      || cfg.enableFishAutoStart || cfg.enableFishCompletions) (mkOrder 200
         ((if cfg.enableFishIntegration || cfg.enableFishCompletions then ''
           eval (${zellijCmd} setup --generate-completion fish | string collect)
         '' else
           "") + (if cfg.enableFishIntegration || cfg.enableFishAutoStart then ''
-          eval (${zellijCmd} setup --generate-auto-start fish | string collect)
-        '' else
-          "")));
+            eval (${zellijCmd} setup --generate-auto-start fish | string collect)
+          '' else
+            "")));
 
   };
 }
